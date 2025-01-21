@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Chatbot</title>
+    <title>AI Chatbot</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -65,7 +65,7 @@
 </head>
 <body>
     <div class="chat-container">
-        <h2>Smart Chatbot</h2>
+        <h2>AI Chatbot</h2>
         <div class="messages" id="chatMessages"></div>
         <div class="input-area">
             <input type="text" id="userInput" placeholder="Type your message..." />
@@ -76,7 +76,7 @@
     <script>
         const chatMessages = document.getElementById('chatMessages');
 
-        function sendMessage() {
+        async function sendMessage() {
             const userInput = document.getElementById('userInput');
             const message = userInput.value.trim();
 
@@ -88,10 +88,9 @@
             addMessage('user', message);
             userInput.value = '';
 
-            setTimeout(() => {
-                const botResponse = getBotResponse(message);
-                addMessage('bot', botResponse);
-            }, 800);
+            // Send the message to the backend for AI response
+            const botResponse = await getBotResponse(message);
+            addMessage('bot', botResponse);
         }
 
         function addMessage(sender, text) {
@@ -102,18 +101,34 @@
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
-        function getBotResponse(message) {
-            const lowerMessage = message.toLowerCase();
-            if (lowerMessage.includes('hello')) {
-                return "Hi there! How can I assist you today?";
-            } else if (lowerMessage.includes('how are you')) {
-                return "I'm just a bot, but I'm here to help!";
-            } else if (lowerMessage.includes('your name')) {
-                return "I am your Smart Chatbot, ready to chat with you!";
+        async function getBotResponse(userInput) {
+            const API_URL = 'https://api.openai.com/v1/completions';
+            const API_KEY = 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; // Replace with your OpenAI API key
+
+            const requestBody = {
+                model: "text-davinci-003",
+                prompt: userInput,
+                max_tokens: 150,
+                temperature: 0.7
+            };
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_KEY}`
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                const data = await response.json();
+                return data.choices[0].text.trim();
+            } catch (error) {
+                console.error('Error fetching AI response:', error);
+                return "Oops! Something went wrong. Please try again.";
             }
-            return "I'm not sure how to respond to that. Can you ask something else?";
         }
     </script>
 </body>
 </html>
-
